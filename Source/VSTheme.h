@@ -28,7 +28,8 @@ typedef NS_ENUM(NSUInteger, VSTextCaseTransform) {
 #define VSTHEME_UIFONT(theme, name, defaultName, defaultSize)   \
     UIFont* name = [theme fontForKey:@#name defaultFontName:defaultName defaultFontSize:defaultSize]
 
-
+#define VSTHEME_NSSTRING(theme, name )   \
+    NSString* name = [theme stringForKey:@#name ]
 
 @class VSAnimationSpecifier;
 
