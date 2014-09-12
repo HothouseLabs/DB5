@@ -12,7 +12,6 @@
 static BOOL stringIsEmpty(NSString *s);
 static UIColor *colorWithHexString(NSString *hexString);
 
-
 @interface VSTheme ()
 
 @property (nonatomic, strong) NSDictionary *themeDictionary;
@@ -47,94 +46,56 @@ static UIColor *colorWithHexString(NSString *hexString);
 	id obj = [self.themeDictionary valueForKeyPath:key];
 	if (obj == nil && self.parentTheme != nil)
 		obj = [self.parentTheme objectForKey:key];
-	return obj;
+	if (!obj)
+        @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                       reason:@"Missing theme key in DB5"
+                                     userInfo:@{@"key": key}];
+
+    return obj;
 }
 
 
-- (BOOL)boolForKey:(NSString *)key defaultValue:(BOOL)defaultValue {
+- (BOOL)boolForKey:(NSString *)key {
 
 	id obj = [self objectForKey:key];
-	if (obj == nil)
-		return defaultValue;
 	return [obj boolValue];
 }
 
-- (BOOL)boolForKey:(NSString *)key {
-    
-    return [self boolForKey:key defaultValue:NO];
-}
-
-- (NSString *)stringForKey:(NSString *)key defaultValue:(NSString *)defaultValue {
+- (NSString *)stringForKey:(NSString *)key {
 	
 	id obj = [self objectForKey:key];
-	if (obj == nil)
-		return defaultValue;
 	if ([obj isKindOfClass:[NSString class]])
 		return obj;
 	if ([obj isKindOfClass:[NSNumber class]])
 		return [obj stringValue];
-	return defaultValue;
-}
-
-- (NSString *)stringForKey:(NSString *)key {
-    
-    return [self stringForKey:key defaultValue:nil];
-}
-
-- (NSInteger)integerForKey:(NSString *)key defaultValue:(NSInteger)defaultValue {
-
-	id obj = [self objectForKey:key];
-	if (obj == nil)
-		return defaultValue;
-	return [obj integerValue];
+	return [obj stringValue];
 }
 
 - (NSInteger)integerForKey:(NSString *)key {
 
-    return [self integerForKey:key defaultValue:0];
-}
-
-- (CGFloat)floatForKey:(NSString *)key defaultValue:(CGFloat)defaultValue {
-	
 	id obj = [self objectForKey:key];
-	if (obj == nil)
-		return  defaultValue;
-	return [obj floatValue];
+	return [obj integerValue];
 }
 
 - (CGFloat)floatForKey:(NSString *)key {
-
-    return [self floatForKey:key defaultValue:0.0f];
-}
-
-- (NSTimeInterval)timeIntervalForKey:(NSString *)key defaultValue:(NSTimeInterval)defaultValue {
-
+	
 	id obj = [self objectForKey:key];
-	if (obj == nil)
-		return defaultValue;
-	return [obj doubleValue];
+	return [obj floatValue];
 }
 
 - (NSTimeInterval)timeIntervalForKey:(NSString *)key {
-    
-    return [self timeIntervalForKey:key defaultValue:0.0];
-}
 
-- (UIImage *)imageForKey:(NSString *)key defaultValue:(UIImage *)defaultValue {
-	
-	NSString *imageName = [self stringForKey:key];
-	if (stringIsEmpty(imageName))
-		return defaultValue;
-	
-	return [UIImage imageNamed:imageName];
+	id obj = [self objectForKey:key];
+	return [obj doubleValue];
 }
 
 - (UIImage *)imageForKey:(NSString *)key {
-    
-    return [self imageForKey:key defaultValue:nil];
+	
+	NSString *imageName = [self stringForKey:key];
+	return [UIImage imageNamed:imageName];
 }
 
-- (UIColor *)colorForKey:(NSString *)key defaultValue:(UIColor *)defaultValue {
+- (UIColor *)colorForKey:(NSString *)key {
 
 	UIColor *cachedColor = [self.colorCache objectForKey:key];
 	if (cachedColor != nil)
@@ -142,38 +103,33 @@ static UIColor *colorWithHexString(NSString *hexString);
     
 	UIColor *color = nil;
 	NSString *colorString = [self stringForKey:key];
-	if (colorString == nil) {
-		color = defaultValue;
-	} else {
-		color = colorWithHexString(colorString);
-		if (color == nil)
-			color = defaultValue;
-	}
+    color = colorWithHexString(colorString);
 
 	[self.colorCache setObject:color forKey:key];
 
 	return color;
 }
 
-- (UIColor *)colorForKey:(NSString *)key {
-    
-    return [self colorForKey:key defaultValue:[UIColor blackColor]];
-}
+- (UIEdgeInsets)edgeInsetsForKey:(NSString *)key {
 
-- (UIEdgeInsets)edgeInsetsForKey:(NSString *)key defaultValue:(UIEdgeInsets)defaultValue {
-
-	CGFloat left = [self floatForKey:[key stringByAppendingString:@"Left"] defaultValue:defaultValue.left];
-	CGFloat top = [self floatForKey:[key stringByAppendingString:@"Top"] defaultValue:defaultValue.top];
-	CGFloat right = [self floatForKey:[key stringByAppendingString:@"Right"] defaultValue:defaultValue.right];
-	CGFloat bottom = [self floatForKey:[key stringByAppendingString:@"Bottom"] defaultValue:defaultValue.bottom];
+	CGFloat left = [self floatForKey:[key stringByAppendingString:@"Left"]];
+	CGFloat top = [self floatForKey:[key stringByAppendingString:@"Top"]];
+	CGFloat right = [self floatForKey:[key stringByAppendingString:@"Right"]];
+	CGFloat bottom = [self floatForKey:[key stringByAppendingString:@"Bottom"]];
 
 	UIEdgeInsets edgeInsets = UIEdgeInsetsMake(top, left, bottom, right);
 	return edgeInsets;
 }
 
-- (UIEdgeInsets)edgeInsetsForKey:(NSString *)key {
+- (CGRect)rectForKey:(NSString *)key {
+
+	CGFloat x = [self floatForKey:[key stringByAppendingString:@"X"]];
+	CGFloat y = [self floatForKey:[key stringByAppendingString:@"Y"]];
+	CGFloat width = [self floatForKey:[key stringByAppendingString:@"Width"]];
+	CGFloat height = [self floatForKey:[key stringByAppendingString:@"Height"]];
     
-    return [self edgeInsetsForKey:key defaultValue:UIEdgeInsetsZero];
+	CGRect rect = CGRectMake(x, y, width, height);
+	return rect;
 }
 
 - (UIFont *)fontForKey:(NSString *)key {
@@ -203,68 +159,28 @@ static UIColor *colorWithHexString(NSString *hexString);
 	return font;
 }
 
-- (UIFont *)fontForKey:(NSString *)key defaultFontName:(NSString*)defaultFontName defaultFontSize:(CGFloat)defaultFontSize {
-    
-	UIFont *cachedFont = [self.fontCache objectForKey:key];
-	if (cachedFont != nil)
-		return cachedFont;
-    
-	NSString *fontName = [self stringForKey:key];
-	CGFloat fontSize = [self floatForKey:[key stringByAppendingString:@"Size"]];
-    
-    if (fontSize < 1.0f)
-        fontSize = defaultFontSize >= 1.0f ? defaultFontSize : 15.0f;
-    
-	UIFont *font = nil;
-    
-	if (stringIsEmpty(fontName))
-		font = [UIFont fontWithName:defaultFontName size:fontSize];
-	else
-		font = [UIFont fontWithName:fontName size:fontSize];
-    
-	if (font == nil)
-		font = [UIFont systemFontOfSize:fontSize];
-    
-	[self.fontCache setObject:font forKey:key];
-    
-	return font;
-}
+- (CGPoint)pointForKey:(NSString *)key {
 
-- (CGPoint)pointForKey:(NSString *)key defaultValue:(CGPoint)defaultValue {
-
-	CGFloat pointX = [self floatForKey:[key stringByAppendingString:@"X"] defaultValue:defaultValue.x];
-	CGFloat pointY = [self floatForKey:[key stringByAppendingString:@"Y"] defaultValue:defaultValue.y];
+	CGFloat pointX = [self floatForKey:[key stringByAppendingString:@"X"]];
+	CGFloat pointY = [self floatForKey:[key stringByAppendingString:@"Y"]];
 
 	CGPoint point = CGPointMake(pointX, pointY);
 	return point;
 }
 
 
-- (CGPoint)pointForKey:(NSString *)key {
-    
-	return [self pointForKey:key defaultValue:CGPointZero];
-}
+- (CGSize)sizeForKey:(NSString *)key {
 
-- (CGSize)sizeForKey:(NSString *)key defaultValue:(CGSize)defaultValue {
-
-	CGFloat width = [self floatForKey:[key stringByAppendingString:@"Width"] defaultValue:defaultValue.width];
-	CGFloat height = [self floatForKey:[key stringByAppendingString:@"Height"] defaultValue:defaultValue.height];
+	CGFloat width = [self floatForKey:[key stringByAppendingString:@"Width"]];
+	CGFloat height = [self floatForKey:[key stringByAppendingString:@"Height"]];
 
 	CGSize size = CGSizeMake(width, height);
 	return size;
 }
 
-- (CGSize)sizeForKey:(NSString *)key {
-    
-    return [self sizeForKey:key defaultValue:CGSizeZero];
-}
-
-- (UIViewAnimationOptions)curveForKey:(NSString *)key defaultValue:(UIViewAnimationOptions)defaultValue {
+- (UIViewAnimationOptions)curveForKey:(NSString *)key {
     
 	NSString *curveString = [self stringForKey:key];
-	if (stringIsEmpty(curveString))
-		return defaultValue;
-
 	curveString = [curveString lowercaseString];
 	if ([curveString isEqualToString:@"easeinout"])
 		return UIViewAnimationOptionCurveEaseInOut;
@@ -275,12 +191,7 @@ static UIColor *colorWithHexString(NSString *hexString);
 	else if ([curveString isEqualToString:@"linear"])
 		return UIViewAnimationOptionCurveLinear;
     
-	return defaultValue;
-}
-
-- (UIViewAnimationOptions)curveForKey:(NSString *)key {
-    
-    return [self curveForKey:key defaultValue:UIViewAnimationOptionCurveEaseInOut];
+	return UIViewAnimationOptionCurveLinear;
 }
 
 - (VSAnimationSpecifier *)animationSpecifierForKey:(NSString *)key {
@@ -294,23 +205,15 @@ static UIColor *colorWithHexString(NSString *hexString);
 	return animationSpecifier;
 }
 
-- (VSTextCaseTransform)textCaseTransformForKey:(NSString *)key defaultValue:(VSTextCaseTransform)defaultValue {
+- (VSTextCaseTransform)textCaseTransformForKey:(NSString *)key {
 
 	NSString *s = [self stringForKey:key];
-	if (s == nil)
-		return defaultValue;
-
 	if ([s caseInsensitiveCompare:@"lowercase"] == NSOrderedSame)
 		return VSTextCaseTransformLower;
 	else if ([s caseInsensitiveCompare:@"uppercase"] == NSOrderedSame)
 		return VSTextCaseTransformUpper;
 
-	return defaultValue;
-}
-
-- (VSTextCaseTransform)textCaseTransformForKey:(NSString *)key {
-
-    return [self textCaseTransformForKey:key defaultValue:VSTextCaseTransformNone];
+	return VSTextCaseTransformNone;
 }
 
 @end
