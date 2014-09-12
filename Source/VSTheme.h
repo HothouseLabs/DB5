@@ -15,21 +15,50 @@ typedef NS_ENUM(NSUInteger, VSTextCaseTransform) {
     VSTextCaseTransformLower
 };
 
+#define VSTHEME_BOOL(theme, name)   \
+    BOOL name = [theme boolForKey:@#name]
 
-#define VSTHEME_CGFLOAT(theme, name, default)  \
-    CGFloat name = [theme floatForKey:@#name defaultValue:default]
+#define VSTHEME_NSSTRING(theme, name)   \
+    NSString* name = [theme stringForKey:@#name]
 
-#define VSTHEME_NSINTEGER(theme, name, default)  \
-    NSUInteger name = [theme integerForKey:@#name defaultValue:default]
+#define VSTHEME_NSINTEGER(theme, name)  \
+    NSUInteger name = [theme integerForKey:@#name]
 
-#define VSTHEME_UICOLOR(theme, name, default)  \
-    UIColor* name = [theme colorForKey:@#name defaultValue:default]
+#define VSTHEME_CGFLOAT(theme, name)  \
+    CGFloat name = [theme floatForKey:@#name]
 
-#define VSTHEME_UIFONT(theme, name, defaultName, defaultSize)   \
-    UIFont* name = [theme fontForKey:@#name defaultFontName:defaultName defaultFontSize:defaultSize]
+#define VSTHEME_UIIMAGE(theme, name)  \
+    UIImage *name = [theme imageForKey:@#name]
 
-#define VSTHEME_NSSTRING(theme, name )   \
-    NSString* name = [theme stringForKey:@#name ]
+#define VSTHEME_UICOLOR(theme, name)  \
+    UIColor *name = [theme colorForKey:@#name]
+
+#define VSTHEME_UIEDGEINSETS(theme, name)   \
+    UIEdgeInsets name = [theme edgeInsetsForKey:@#name]
+
+#define VSTHEME_CGRECT(theme, name) \
+    CGRect name = [theme rectForKey:@#name]
+
+#define VSTHEME_UIFONT(theme, name)   \
+    UIFont *name = [theme fontForKey:@#name]
+
+#define VSTHEME_CGPOINT(theme, name) \
+    CGPoint name = [theme pointForKey:@#name]
+
+#define VSTHEME_CGSIZE(theme, name) \
+    CGSize name = [theme sizeForKey:@#name]
+
+#define VSTHEME_NSTIMEINTERVALE(theme, name) \
+    NSTimeInterval name = [theme timeIntervalForKey:@#name]
+
+#define VSTHEME_UIVIEWANIMATIONOPTIONS(theme, name) \
+    UIViewAnimationOptions name = [theme curveForKey:@#name]
+
+#define VSTHEME_VSANIMATIONSPECIFIER(theme, name) \
+    VSAnimationSpecifier *name = [theme animationSpecifierForKey:@#name]
+
+#define VSTHEME_VSTEXTCASETRANSFORM(theme, name) \
+    VSTextCaseTransform *name = [theme textCaseTransformForKey:@#name]
 
 @class VSAnimationSpecifier;
 
@@ -41,34 +70,22 @@ typedef NS_ENUM(NSUInteger, VSTextCaseTransform) {
 @property (nonatomic, strong) VSTheme *parentTheme; /*can inherit*/
 
 - (BOOL)boolForKey:(NSString *)key;
-- (BOOL)boolForKey:(NSString*)key defaultValue:(BOOL)defaultValue;
 - (NSString *)stringForKey:(NSString *)key;
-- (NSString *)stringForKey:(NSString *)key defaultValue:(NSString *)defaultValue;
 - (NSInteger)integerForKey:(NSString *)key;
-- (NSInteger)integerForKey:(NSString *)key defaultValue:(NSInteger)defaultValue;
 - (CGFloat)floatForKey:(NSString *)key;
-- (CGFloat)floatForKey:(NSString *)key defaultValue:(CGFloat)defaultValue;
 - (UIImage *)imageForKey:(NSString *)key; /*Via UIImage imageNamed:*/
-- (UIImage *)imageForKey:(NSString *)key defaultValue:(UIImage *)defaultValue; /*Via UIImage imageNamed:*/
 - (UIColor *)colorForKey:(NSString *)key; /*123ABC or #123ABC: 6 digits, leading # allowed but not required*/
-- (UIColor *)colorForKey:(NSString *)key defaultValue:(UIColor *)defaultValue; /*123ABC or #123ABC: 6 digits, leading # allowed but not required*/
 - (UIEdgeInsets)edgeInsetsForKey:(NSString *)key; /*xTop, xLeft, xRight, xBottom keys*/
-- (UIEdgeInsets)edgeInsetsForKey:(NSString *)key defaultValue:(UIEdgeInsets)defaultValue; /*xTop, xLeft, xRight, xBottom keys*/
+- (CGRect)rectForKey:(NSString *)key; /*xX, xY, xWidth, xHeight keys*/
 - (UIFont *)fontForKey:(NSString *)key; /*x and xSize keys*/
-- (UIFont *)fontForKey:(NSString *)key defaultFontName:(NSString*)defaultFontName defaultFontSize:(CGFloat)defaultFontSize;
 - (CGPoint)pointForKey:(NSString *)key; /*xX and xY keys*/
-- (CGPoint)pointForKey:(NSString *)key defaultValue:(CGPoint)defaultValue; /*xX and xY keys*/
 - (CGSize)sizeForKey:(NSString *)key; /*xWidth and xHeight keys*/
-- (CGSize)sizeForKey:(NSString *)key defaultValue:(CGSize)defaultValue; /*xWidth and xHeight keys*/
 - (NSTimeInterval)timeIntervalForKey:(NSString *)key;
-- (NSTimeInterval)timeIntervalForKey:(NSString *)key defaultValue:(NSTimeInterval)defaultValue;
 
 - (UIViewAnimationOptions)curveForKey:(NSString *)key; /*Possible values: easeinout, easeout, easein, linear*/
-- (UIViewAnimationOptions)curveForKey:(NSString *)key defaultValue:(UIViewAnimationOptions)defaultValue; /*Possible values: easeinout, easeout, easein, linear*/
 - (VSAnimationSpecifier *)animationSpecifierForKey:(NSString *)key; /*xDuration, xDelay, xCurve*/
 
 - (VSTextCaseTransform)textCaseTransformForKey:(NSString *)key; /*lowercase or uppercase -- returns VSTextCaseTransformNone*/
-- (VSTextCaseTransform)textCaseTransformForKey:(NSString *)key defaultValue:(VSTextCaseTransform)defaultValue; /*lowercase or uppercase -- returns VSTextCaseTransformNone*/
 
 @end
 
